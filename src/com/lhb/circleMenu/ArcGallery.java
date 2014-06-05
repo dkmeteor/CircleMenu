@@ -1,10 +1,13 @@
 package com.lhb.circleMenu;
 
 import android.content.Context;
+import android.graphics.Camera;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Transformation;
 import android.widget.Gallery;
 
 public class ArcGallery extends Gallery {
@@ -36,44 +39,62 @@ public class ArcGallery extends Gallery {
     }
 
     private int getCenterOfCoverflow() {
-        return (getWidth() - getPaddingLeft() - getPaddingRight()) / 2
-                + getPaddingLeft();
+        return (getWidth() - getPaddingLeft() - getPaddingRight()) / 2 + getPaddingLeft();
     }
 
     private static int getCenterOfView(View view) {
         return view.getLeft() + view.getWidth() / 2;
     }
 
+    // @Override
+    // protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+    // int childCenter = getCenterOfView(child);
+    // float rotationAngle = (int) ((coveflowCenterX - childCenter) * 180f
+    // / Math.PI / mRadius);
+    //
+    // int top = child.getTop();
+    // int left = child.getLeft();
+    // int childWidth = child.getMeasuredWidth();
+    //
+    // double radians = Math.toRadians(0 - rotationAngle);
+    // int dx = (int) (mRadius * Math.sin(radians) + coveflowCenterX - left - childWidth * 0.5);
+    // int dy = (int) (coveflowCenterY - mRadius * Math.cos(radians)) - top;
+    //
+    // canvas.save();
+    //
+    // canvas.translate(dx, dy);
+    // canvas.rotate(-rotationAngle, childCenter,
+    // (child.getTop() + child.getBottom()) / 2);
+    // boolean result = super.drawChild(canvas, child, drawingTime);
+    // canvas.restore();
+    // return result;
+    // }
+
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        mRadius = (int)(w / 2 / Math.sin(Math.toRadians(DEGREE)));
+        Log.e("tag", "radius:" + mRadius);
+        coveflowCenterX = getCenterOfCoverflow();
+        coveflowCenterY = mRadius;
+        super.onSizeChanged(w, h, oldw, oldh);
+    }
+
     @Override
-    protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+    protected boolean getChildStaticTransformation(View child, Transformation t) {
         int childCenter = getCenterOfView(child);
-        float rotationAngle = (int) ((coveflowCenterX - childCenter) * 180f
-                / Math.PI / mRadius);
+        float rotationAngle = (int)((coveflowCenterX - childCenter) * 180f / Math.PI / mRadius);
 
         int top = child.getTop();
         int left = child.getLeft();
         int childWidth = child.getMeasuredWidth();
 
         double radians = Math.toRadians(0 - rotationAngle);
-        int dx = (int) (mRadius * Math.sin(radians) + coveflowCenterX - left - childWidth * 0.5);
-        int dy = (int) (coveflowCenterY - mRadius * Math.cos(radians)) - top;
+        int dx = (int)(mRadius * Math.sin(radians) + coveflowCenterX - left - childWidth * 0.5);
+        int dy = (int)(coveflowCenterY - mRadius * Math.cos(radians)) - top;
+        Matrix matrix = t.getMatrix();
+        matrix.postTranslate(dx, dy);
 
-        canvas.save();
 
-        canvas.translate(dx, dy);
-        canvas.rotate(-rotationAngle, childCenter,
-                (child.getTop() + child.getBottom()) / 2);
-        boolean result = super.drawChild(canvas, child, drawingTime);
-        canvas.restore();
-        return result;
-    }
-
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        mRadius = (int) (w / 2 / Math.sin(Math.toRadians(DEGREE)));
-        Log.e("tag", "radius:" + mRadius);
-        coveflowCenterX = getCenterOfCoverflow();
-        coveflowCenterY = mRadius;
-        super.onSizeChanged(w, h, oldw, oldh);
+        return true;
     }
 
 }
